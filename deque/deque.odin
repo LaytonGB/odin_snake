@@ -12,6 +12,10 @@ new :: proc($N: i32, $T: typeid) -> (res: ^Deque(N, T))
 	return
 }
 
+iter :: proc(deque: ^Deque($N, $T)) -> []T {
+	return // TODO
+}
+
 push_back :: proc(deque: ^Deque($N, $T), value: T) -> bool {
 	if deque_is_full(deque) {
 		return false
