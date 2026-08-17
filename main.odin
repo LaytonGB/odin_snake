@@ -7,22 +7,33 @@ Grid_State :: enum {Empty, Food}
 
 Vec2 :: [2]i32
 
-GRID_SIZE : i32 : 10
+GRID_SIZE : i32 : 11
 GRID : [GRID_SIZE * GRID_SIZE]Grid_State
 
-draw_game_board :: proc(center_x, center_y, min_dimension, grid_size: i32) {
-	zero_x := center_x - (min_dimension / 2)
-	zero_y := center_y - (min_dimension / 2)
-	step := min_dimension / grid_size
+draw_game_board :: proc(center: Vec2, min_dimension, grid_size: i32) {
+	start := center - (min_dimension / 2)
+	end := center + (min_dimension / 2)
 
 	// horizontal lines
 	for i in 0..=grid_size {
-		rl.DrawLine(zero_x, zero_y + (i * step), zero_x + min_dimension, zero_y + (i * step), {255, 255, 255, 255})
+		rl.DrawLine(
+			start.x,
+			start.y + (i * min_dimension / grid_size),
+			end.x,
+			start.y + (i * min_dimension / grid_size),
+			{255, 255, 255, 255}
+		)
 	}
 
 	// vertical lines
 	for i in 0..=grid_size {
-		rl.DrawLine(zero_x + (i * step), zero_y, zero_x + (i * step), zero_y + min_dimension, {255, 255, 255, 255})
+		rl.DrawLine(
+			start.x + (i * min_dimension / grid_size),
+			start.y,
+			start.x + (i * min_dimension / grid_size),
+			end.y,
+			{255, 255, 255, 255}
+		)
 	}
 }
 
@@ -39,7 +50,7 @@ main :: proc() {
 		rl.BeginDrawing()
 		rl.ClearBackground({100, 100, 100, 255})
 		// draw_snake(window_center[0], window_center[1], min(window_size[0], window_size[1]) - window_padding, 10, )
-		draw_game_board(window_center[0], window_center[1], min(window_size[0], window_size[1]) - window_padding, GRID_SIZE)
+		draw_game_board(window_center, min(window_size.x, window_size.y) - window_padding, GRID_SIZE)
 		rl.EndDrawing()
 	}
 
