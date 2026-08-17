@@ -1,0 +1,10 @@
+{
+  "cSpell.words": [
+    "raylib"
+  ],
+  "[odin]": {
+    "editor.detectIndentation": false,
+    "editor.indentSize": 2,
+    "editor.insertSpaces": false
+  }
+}
