@@ -38,40 +38,40 @@ push_front :: proc(deque: ^Deque($N, $T), value: T) -> bool {
 	return true
 }
 
-pop_back :: proc(deque: ^Deque($N, $T)) -> (int, bool) {
+pop_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	if is_empty(deque) {
-		return nil, false
+		return nil
 	}
 
 	res := deque.data[deque.back_index]
 	deque.back_index = (deque.back_index + 1) % int(N)
-	return res, true
+	return res
 }
 
-pop_front :: proc(deque: ^Deque($N, $T)) -> (int, bool) {
+pop_front :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	if is_empty(deque) {
-		return nil, false
+		return nil
 	}
 
 	deque.front_index = (deque.front_index + N - 1) % int(N)
 	res := deque.data[deque.back_index]
-	return res, true
+	return res
 }
 
-peek_back :: proc(deque: ^Deque($N, $T)) -> (int, bool) {
+peek_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	if is_empty(deque) {
-		return nil, false
+		return nil
 	}
 
-	return deque.data[deque.back_index], true
+	return deque.data[deque.back_index]
 }
 
-peek_front :: proc(deque: ^Deque($N, $T)) -> (int, bool) {
+peek_front :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	if is_empty(deque) {
-		return nil, false
+		return nil
 	}
 
-	return deque.data[deque.front_index - 1], true
+	return deque.data[deque.front_index - 1]
 }
 
 is_empty :: proc(deque: ^Deque) -> bool {
