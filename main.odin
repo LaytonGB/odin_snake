@@ -1,6 +1,7 @@
 package main
 
 import "core:fmt"
+import "core:math/rand"
 import "deque"
 import rl "vendor:raylib"
 
@@ -19,7 +20,9 @@ main :: proc() {
 	last_move_dir := Vec2Zero
 	last_step_time: f64 = rl.GetTime()
 	sec_per_move: f64 = 1.
+	move_delay_modifier: f64 = .9
 
+	food_position := get_random_grid_pos()
 	snake_positions := deque.new(GRID_SIZE * GRID_SIZE, Vec2)
 	deque.push_front(&snake_positions, Vec2{GRID_SIZE / 2, GRID_SIZE / 2})
 
@@ -30,15 +33,13 @@ main :: proc() {
 	rl.InitWindow(window_size[0], window_size[1], "My Odin + Raylib game")
 
 	for !rl.WindowShouldClose() {
-		// TODO generate goal pos
-
 		// handle input and snake move
 		if new_move_dir, has_last_input := get_last_input().?; has_last_input {
 			last_move_dir = new_move_dir
 		}
 		if do_move_snake(last_step_time, sec_per_move) {
 			next_pos := get_next_pos(&snake_positions, last_move_dir)
-			if !is_in_bounds(next_pos) {
+			if !is_in_bounds(next_pos) || is_pos_in_snake(&snake_positions, next_pos) {
 				end_game()
 				return
 			}
@@ -46,10 +47,18 @@ main :: proc() {
 			last_step_time = rl.GetTime()
 		}
 
+		// generate food pos
+		if is_snake_head_in_pos(&snake_positions, food_position) {
+			grow_snake(&snake_positions)
+			sec_per_move *= move_delay_modifier
+			food_position = get_random_grid_pos()
+		}
+
 		// draw values
 		rl.BeginDrawing()
 		rl.ClearBackground({100, 100, 100, 255})
 		draw_snake(window_center, window_min_safe, &snake_positions)
+		draw_food(window_center, window_min_safe, food_position)
 		draw_game_board(window_center, window_min_safe)
 
 		rl.EndDrawing()
@@ -58,7 +67,41 @@ main :: proc() {
 	rl.CloseWindow()
 }
 
-move_snake :: proc(snake: ^deque.Deque($N, $T), next: Vec2) {
+is_pos_in_snake :: proc(snake: ^deque.Deque($N, Vec2), pos: Vec2) -> bool {
+	// cant enter self at lengths < 5
+	if deque.len(snake) < 5 {
+		return false
+	}
+
+	snake_positions := deque.iter(snake)
+	// skip fist two: cant enter them
+	// skip last: movement not yet applied, so it wont be there when we move into that square
+	return is_pos_in_list(snake_positions[3:len(snake_positions) - 1], pos)
+}
+
+is_pos_in_list :: proc(list: []Vec2, pos: Vec2) -> bool {
+	for pos2 in list {
+		if pos2 == pos {
+			return true
+		}
+	}
+	return false
+}
+
+grow_snake :: proc(snake: ^deque.Deque($N, Vec2)) {
+	first_pos := deque.peek_back(snake).?
+	deque.push_back(snake, first_pos)
+}
+
+is_snake_head_in_pos :: proc(snake: ^deque.Deque($N, Vec2), pos: Vec2) -> bool {
+	return deque.peek_front(snake).? == pos
+}
+
+get_random_grid_pos :: proc() -> Vec2 {
+	return Vec2{rand.int32_range(0, GRID_SIZE), rand.int32_range(0, GRID_SIZE)}
+}
+
+move_snake :: proc(snake: ^deque.Deque($N, Vec2), next: Vec2) {
 	deque.pop_back(snake)
 	deque.push_front(snake, next)
 }
@@ -71,7 +114,7 @@ is_in_bounds :: proc(pos: Vec2) -> bool {
 	return pos.x >= 0 && pos.x < GRID_SIZE && pos.y >= 0 && pos.y < GRID_SIZE
 }
 
-get_next_pos :: proc(snake: ^deque.Deque($N, $T), move_dir: Vec2) -> Vec2 {
+get_next_pos :: proc(snake: ^deque.Deque($N, Vec2), move_dir: Vec2) -> Vec2 {
 	curr_square := deque.peek_front(snake).?
 	if move_dir == Vec2Zero {
 		prev_square, has_prev := deque.nth(snake, -2).?
@@ -139,7 +182,24 @@ draw_game_board :: proc(center: Vec2, min_dimension: i32) {
 	}
 }
 
-draw_snake :: proc(center: Vec2, min_dimension: i32, snake: ^deque.Deque($N, $T)) {
+draw_food :: proc(center: Vec2, min_dimension: i32, pos: Vec2) {
+	start := center - (min_dimension / 2)
+	margin_percent: i32 = 10
+
+	rl.DrawRectangle(
+		start.x +
+		pos.x * min_dimension / GRID_SIZE +
+		min_dimension * margin_percent / (100 * GRID_SIZE),
+		start.y +
+		pos.y * min_dimension / GRID_SIZE +
+		min_dimension * margin_percent / (100 * GRID_SIZE),
+		min_dimension / GRID_SIZE - min_dimension * (margin_percent * 2) / (100 * GRID_SIZE),
+		min_dimension / GRID_SIZE - min_dimension * (margin_percent * 2) / (100 * GRID_SIZE),
+		{180, 80, 30, 255},
+	)
+}
+
+draw_snake :: proc(center: Vec2, min_dimension: i32, snake: ^deque.Deque($N, Vec2)) {
 	start := center - (min_dimension / 2)
 
 	for pos in deque.iter(snake) {
