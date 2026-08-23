@@ -1,6 +1,5 @@
 package main
 
-import "core:fmt"
 import "core:math/rand"
 import "deque"
 import rl "vendor:raylib"
