@@ -10,6 +10,19 @@ new :: proc($N: i32, $T: typeid) -> (res: Deque(N, T)) where N >= 0 {
 	return
 }
 
+nth :: proc(deque: ^Deque($N, $T), index: int) -> Maybe(T) {
+	if index < 0 {
+		if -index > len(deque) {
+			return nil
+		}
+		return deque.data[len(deque) + index]
+	}
+	if index >= len(deque) {
+		return nil
+	}
+	return deque.data[index]
+}
+
 iter :: proc(deque: ^Deque($N, $T)) -> [dynamic; N]T {
 	res: [dynamic; N]T
 	for i in 0 ..< len(deque) {
