@@ -1,6 +1,8 @@
 {
   "cSpell.words": [
-    "raylib"
+    "cstring",
+    "raylib",
+    "strconv"
   ],
   "[odin]": {
     "editor.detectIndentation": false,

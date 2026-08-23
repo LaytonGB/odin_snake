@@ -1,6 +1,7 @@
 package main
 
 import "core:math/rand"
+import "core:strconv"
 import "deque"
 import rl "vendor:raylib"
 
@@ -16,6 +17,8 @@ GRID_SIZE: i32 : 11
 GRID: [GRID_SIZE * GRID_SIZE]Grid_State
 
 main :: proc() {
+	score: i64 = 0
+
 	last_move_dir := Vec2{0, 1}
 	last_step_time: f64 = rl.GetTime()
 	sec_per_move: f64 = .7
@@ -51,6 +54,7 @@ main :: proc() {
 		// generate food pos
 		if is_snake_head_in_pos(&snake_positions, food_position) {
 			grow_snake(&snake_positions)
+			score = i64(f64(score) * 1.2 + 1)
 			sec_per_move *= move_delay_modifier
 			food_position = get_random_grid_pos()
 		}
@@ -61,11 +65,20 @@ main :: proc() {
 		draw_snake(window_center, window_min_safe, &snake_positions)
 		draw_food(window_center, window_min_safe, food_position)
 		draw_game_board(window_center, window_min_safe)
+		draw_score(score, window_padding)
 
 		rl.EndDrawing()
 	}
 
 	rl.CloseWindow()
+}
+
+draw_score :: proc(score: i64, padding: i32) {
+	score_text_buf: [128]byte
+	strconv.write_int(score_text_buf[:], score, 10)
+	ptr: [^]byte = raw_data(score_text_buf[:])
+	cstr := cstring(ptr)
+	rl.DrawText(cstr, padding, padding, 24, {150, 150, 150, 255})
 }
 
 is_input_valid :: proc(snake: ^deque.Deque($N, Vec2), move: Vec2) -> bool {
