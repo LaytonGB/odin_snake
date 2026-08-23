@@ -19,8 +19,8 @@ GRID: [GRID_SIZE * GRID_SIZE]Grid_State
 main :: proc() {
 	last_move_dir := Vec2{0, 1}
 	last_step_time: f64 = rl.GetTime()
-	sec_per_move: f64 = 1.
-	move_delay_modifier: f64 = .9
+	sec_per_move: f64 = .7
+	move_delay_modifier: f64 = .95
 
 	food_position := get_random_grid_pos()
 	snake_positions := deque.new(GRID_SIZE * GRID_SIZE, Vec2)
@@ -35,7 +35,9 @@ main :: proc() {
 	for !rl.WindowShouldClose() {
 		// handle input and snake move
 		if new_move_dir, has_last_input := get_last_input().?; has_last_input {
-			last_move_dir = new_move_dir
+			if is_input_valid(&snake_positions, new_move_dir) {
+				last_move_dir = new_move_dir
+			}
 		}
 		if do_move_snake(last_step_time, sec_per_move) {
 			next_pos := get_next_pos(&snake_positions, last_move_dir)
@@ -65,6 +67,17 @@ main :: proc() {
 	}
 
 	rl.CloseWindow()
+}
+
+is_input_valid :: proc(snake: ^deque.Deque($N, Vec2), move: Vec2) -> bool {
+	prev_pos, has_prev_pos := deque.nth(snake, -2).?
+	if !has_prev_pos {
+		return true
+	}
+
+	current_pos := deque.peek_front(snake).?
+	next_pos := current_pos + move
+	return next_pos != prev_pos
 }
 
 is_pos_in_snake :: proc(snake: ^deque.Deque($N, Vec2), pos: Vec2) -> bool {
@@ -117,9 +130,6 @@ is_in_bounds :: proc(pos: Vec2) -> bool {
 get_next_pos :: proc(snake: ^deque.Deque($N, Vec2), move_dir: Vec2) -> Vec2 {
 	curr_square := deque.peek_front(snake).?
 	next_square := curr_square + move_dir
-	if prev, has_prev := deque.nth(snake, -2).?; has_prev && prev == next_square {
-		next_square = curr_square - move_dir
-	}
 	return next_square
 }
 
