@@ -17,7 +17,7 @@ GRID_SIZE: i32 : 11
 GRID: [GRID_SIZE * GRID_SIZE]Grid_State
 
 main :: proc() {
-	last_move_dir := Vec2Zero
+	last_move_dir := Vec2{0, 1}
 	last_step_time: f64 = rl.GetTime()
 	sec_per_move: f64 = 1.
 	move_delay_modifier: f64 = .9
@@ -116,14 +116,6 @@ is_in_bounds :: proc(pos: Vec2) -> bool {
 
 get_next_pos :: proc(snake: ^deque.Deque($N, Vec2), move_dir: Vec2) -> Vec2 {
 	curr_square := deque.peek_front(snake).?
-	if move_dir == Vec2Zero {
-		prev_square, has_prev := deque.nth(snake, -2).?
-		if !has_prev {
-			return curr_square + Vec2{0, 1}
-		}
-		return curr_square * 2 - prev_square
-	}
-
 	next_square := curr_square + move_dir
 	if prev, has_prev := deque.nth(snake, -2).?; has_prev && prev == next_square {
 		next_square = curr_square - move_dir
