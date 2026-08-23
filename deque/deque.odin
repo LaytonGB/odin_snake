@@ -38,7 +38,7 @@ push_front :: proc(deque: ^Deque($N, $T), value: T) -> bool {
 	return true
 }
 
-pop_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
+pop_back :: proc(deque: ^Deque($N, $T)) -> Maybe(T) {
 	if is_empty(deque) {
 		return nil
 	}
@@ -48,7 +48,7 @@ pop_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	return res
 }
 
-pop_front :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
+pop_front :: proc(deque: ^Deque($N, $T)) -> Maybe(T) {
 	if is_empty(deque) {
 		return nil
 	}
@@ -58,7 +58,7 @@ pop_front :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	return res
 }
 
-peek_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
+peek_back :: proc(deque: ^Deque($N, $T)) -> Maybe(T) {
 	if is_empty(deque) {
 		return nil
 	}
@@ -66,15 +66,14 @@ peek_back :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
 	return deque.data[deque.back_index]
 }
 
-peek_front :: proc(deque: ^Deque($N, $T)) -> (val: T, ok: bool) {
+peek_front :: proc(deque: ^Deque($N, $T)) -> Maybe(T) {
 	if is_empty(deque) {
 		return nil
 	}
-
 	return deque.data[deque.front_index - 1]
 }
 
-is_empty :: proc(deque: ^Deque) -> bool {
+is_empty :: proc(deque: ^Deque($N, $T)) -> bool {
 	return len(deque) == 0
 }
 
