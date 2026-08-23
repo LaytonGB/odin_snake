@@ -102,3 +102,12 @@ len :: proc(deque: ^Deque($N, $T)) -> int {
 cap :: proc(deque: ^Deque($N, $T)) -> int {
 	return int(N)
 }
+
+contains :: proc(deque: ^Deque($N, $T), value: T) -> bool {
+	for i in 0 ..< len(deque) {
+		if deque.data[(deque.back_index + i) % int(N)] == value {
+			return true
+		}
+	}
+	return false
+}
