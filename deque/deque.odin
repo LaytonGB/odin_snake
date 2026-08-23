@@ -12,7 +12,7 @@ new :: proc($N: i32, $T: typeid) -> (res: Deque(N, T)) where N >= 0 {
 
 nth :: proc(deque: ^Deque($N, $T), index: int) -> Maybe(T) {
 	if index < 0 {
-		if -index > len(deque) {
+		if -index >= len(deque) {
 			return nil
 		}
 		return deque.data[len(deque) + index]
@@ -36,7 +36,7 @@ push_back :: proc(deque: ^Deque($N, $T), value: T) -> bool {
 		return false
 	}
 
-	deque.back_index = (deque.back_index + N - 1) % N
+	deque.back_index = (deque.back_index + int(N) - 1) % int(N)
 	deque.data[deque.back_index] = value
 	return true
 }
@@ -83,7 +83,7 @@ peek_front :: proc(deque: ^Deque($N, $T)) -> Maybe(T) {
 	if is_empty(deque) {
 		return nil
 	}
-	return deque.data[deque.front_index - 1]
+	return deque.data[(deque.front_index + int(N) - 1) % int(N)]
 }
 
 is_empty :: proc(deque: ^Deque($N, $T)) -> bool {
