@@ -5,16 +5,10 @@ import "core:strconv"
 import "deque"
 import rl "vendor:raylib"
 
-Grid_State :: enum {
-	Empty,
-	Food,
-}
-
 Vec2 :: [2]i32
 Vec2Zero :: Vec2{0, 0}
 
 GRID_SIZE: i32 : 11
-GRID: [GRID_SIZE * GRID_SIZE]Grid_State
 
 main :: proc() {
 	score: i64 = 0
