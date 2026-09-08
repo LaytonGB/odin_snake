@@ -3,6 +3,13 @@ package main
 import "game"
 
 main :: proc() {
-	keep_playing := true
-	game.play(&keep_playing)
+	state := game.State.PLAY
+
+	window := game.init_window()
+
+	for state == .PLAY {
+		game.play(&state, window)
+	}
+
+	game.close_window()
 }

@@ -5,11 +5,19 @@ import "core:math/rand"
 import "core:strconv"
 import rl "vendor:raylib"
 
+State :: enum {
+	MENU,
+	PLAY,
+	LOSE,
+	WIN,
+	EXIT,
+}
+
 Vec2 :: [2]i32
 
 GRID_SIZE: i32 : 11
 
-play :: proc(keep_playing: ^bool) {
+play :: proc(state: ^State, window: Window) {
 	score: i64 = 0
 
 	last_move_dir := Vec2{0, 1}
@@ -21,13 +29,7 @@ play :: proc(keep_playing: ^bool) {
 	snake_positions := deque.new(GRID_SIZE * GRID_SIZE, Vec2)
 	deque.push_front(&snake_positions, Vec2{GRID_SIZE / 2, GRID_SIZE / 2})
 
-	window_size := Vec2{1280, 720}
-	window_center := window_size / 2
-	window_padding: i32 = 30
-	window_min_safe := min(window_size.x, window_size.y) - window_padding
-	rl.InitWindow(window_size[0], window_size[1], "My Odin + Raylib game")
-
-	for keep_playing^ {
+	for state^ == .PLAY {
 		// handle input and snake move
 		if new_move_dir, has_last_input := get_last_input().?; has_last_input {
 			if is_input_valid(&snake_positions, new_move_dir) {
@@ -37,7 +39,7 @@ play :: proc(keep_playing: ^bool) {
 		if do_move_snake(last_step_time, sec_per_move) {
 			next_pos := get_next_pos(&snake_positions, last_move_dir)
 			if !is_in_bounds(next_pos) || is_pos_in_snake(&snake_positions, next_pos) {
-				end_game()
+				state^ = .LOSE
 				return
 			}
 			move_snake(&snake_positions, next_pos)
@@ -55,15 +57,13 @@ play :: proc(keep_playing: ^bool) {
 		// draw values
 		rl.BeginDrawing()
 		rl.ClearBackground({100, 100, 100, 255})
-		draw_snake(window_center, window_min_safe, &snake_positions)
-		draw_food(window_center, window_min_safe, food_position)
-		draw_game_board(window_center, window_min_safe)
-		draw_score(score, window_padding)
+		draw_snake(window.center, window.safe_dim, &snake_positions)
+		draw_food(window.center, window.safe_dim, food_position)
+		draw_game_board(window.center, window.safe_dim)
+		draw_score(score, window.padding)
 
 		rl.EndDrawing()
 	}
-
-	rl.CloseWindow()
 }
 
 draw_score :: proc(score: i64, padding: i32) {
@@ -122,10 +122,6 @@ get_random_grid_pos :: proc() -> Vec2 {
 move_snake :: proc(snake: ^deque.Deque($N, Vec2), next: Vec2) {
 	deque.pop_back(snake)
 	deque.push_front(snake, next)
-}
-
-end_game :: proc() {
-	return // TODO main menu stuff
 }
 
 is_in_bounds :: proc(pos: Vec2) -> bool {
