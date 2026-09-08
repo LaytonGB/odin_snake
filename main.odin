@@ -6,7 +6,6 @@ import "deque"
 import rl "vendor:raylib"
 
 Vec2 :: [2]i32
-Vec2Zero :: Vec2{0, 0}
 
 GRID_SIZE: i32 : 11
 
