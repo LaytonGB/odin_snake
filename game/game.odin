@@ -26,7 +26,7 @@ play :: proc(state: ^types.State, window: Window) {
 
 	for state^ == .PLAY {
 		// handle input and snake move
-		if new_move_dir, has_last_input := get_last_input().?; has_last_input {
+		if new_move_dir, has_last_input := get_input_vector().?; has_last_input {
 			if is_input_valid(&snake_positions, new_move_dir) {
 				last_move_dir = new_move_dir
 			}
@@ -137,7 +137,7 @@ do_move_snake :: proc(last_step_time, sec_per_move: f64) -> bool {
 	return rl.GetTime() - last_step_time >= sec_per_move
 }
 
-get_last_input :: proc() -> Maybe(Vec2) {
+get_input_vector :: proc() -> Maybe(Vec2) {
 	if rl.IsKeyDown(.UP) {
 		return Vec2{0, -1}
 	}
