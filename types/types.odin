@@ -1,11 +1,11 @@
 package types
 
 State :: enum {
-	MENU,
-	PLAY,
-	LOSE,
-	WIN,
-	EXIT,
+	Menu,
+	Play,
+	Lose,
+	Win,
+	Exit,
 }
 
 Vec2 :: [2]i32

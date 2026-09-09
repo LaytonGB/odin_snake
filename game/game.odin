@@ -1,3 +1,5 @@
+#+feature using-stmt
+
 package game
 
 import "../deque"
@@ -12,55 +14,70 @@ Window :: window.Window
 
 GRID_SIZE: i32 : 11
 
-play :: proc(state: ^types.State, window: Window) {
-	score: i64 = 0
-	score_buf: [128]byte
+window: Window
 
-	last_move_dir := Vec2{0, 1}
-	last_step_time: f64 = rl.GetTime()
-	sec_per_move: f64 = .7
-	move_delay_modifier: f64 = .95
+Game_State :: struct {
+	score:               i64,
+	score_buf:           [128]byte,
+	last_move_dir:       Vec2,
+	last_step_time:      f64,
+	sec_per_move:        f64,
+	move_delay_modifier: f64,
+	food_position:       Vec2,
+	snake_positions:     deque.Deque(GRID_SIZE * GRID_SIZE, Vec2),
+}
 
-	food_position := get_random_grid_pos()
+init :: proc(window: Window) -> Game_State {
 	snake_positions := deque.new(GRID_SIZE * GRID_SIZE, Vec2)
 	deque.push_front(&snake_positions, Vec2{GRID_SIZE / 2, GRID_SIZE / 2})
 
-	for state^ == .PLAY {
-		// handle input and snake move
-		if new_move_dir, has_last_input := get_input_vector().?; has_last_input {
-			if is_input_valid(&snake_positions, new_move_dir) {
-				last_move_dir = new_move_dir
-			}
-		}
-		if do_move_snake(last_step_time, sec_per_move) {
-			next_pos := get_next_pos(&snake_positions, last_move_dir)
-			if !is_in_bounds(next_pos) || is_pos_in_snake(&snake_positions, next_pos) {
-				state^ = .LOSE
-				return
-			}
-			move_snake(&snake_positions, next_pos)
-			last_step_time = rl.GetTime()
-		}
-
-		// generate food pos
-		if is_snake_head_in_pos(&snake_positions, food_position) {
-			grow_snake(&snake_positions)
-			score = i64(f64(score) * 1.2 + 1)
-			set_score_buf(score_buf[:], score)
-			sec_per_move *= move_delay_modifier
-			food_position = get_random_grid_pos()
-		}
-
-		// draw values
-		rl.BeginDrawing()
-		rl.ClearBackground({100, 100, 100, 255})
-		draw_snake(window.center, window.safe_dim, &snake_positions)
-		draw_food(window.center, window.safe_dim, food_position)
-		draw_game_board(window.center, window.safe_dim)
-		draw_score(score_buf[:], window.padding)
-
-		rl.EndDrawing()
+	return Game_State {
+		score = 0,
+		score_buf = [128]byte{},
+		last_move_dir = Vec2{0, 1},
+		last_step_time = rl.GetTime(),
+		sec_per_move = .7,
+		move_delay_modifier = .95,
+		food_position = get_random_grid_pos(),
+		snake_positions = snake_positions,
 	}
+}
+
+play :: proc(window: Window, state: ^Game_State) -> types.State {
+	// handle input and snake move
+	if new_move_dir, has_last_input := get_input_vector().?; has_last_input {
+		if is_input_valid(&state.snake_positions, new_move_dir) {
+			state.last_move_dir = new_move_dir
+		}
+	}
+	if do_move_snake(state.last_step_time, state.sec_per_move) {
+		next_pos := get_next_pos(&state.snake_positions, state.last_move_dir)
+		if !is_in_bounds(next_pos) || is_pos_in_snake(&state.snake_positions, next_pos) {
+			return types.State.Lose
+		}
+		move_snake(&state.snake_positions, next_pos)
+		state.last_step_time = rl.GetTime()
+	}
+
+	// generate food pos
+	if is_snake_head_in_pos(&state.snake_positions, state.food_position) {
+		grow_snake(&state.snake_positions)
+		state.score = i64(f64(state.score) * 1.2 + 1)
+		set_score_buf(state.score_buf[:], state.score)
+		state.sec_per_move *= state.move_delay_modifier
+		state.food_position = get_random_grid_pos()
+	}
+
+	// draw values
+	rl.BeginDrawing()
+	rl.ClearBackground({100, 100, 100, 255})
+	draw_snake(window.center, window.safe_dim, &state.snake_positions)
+	draw_food(window.center, window.safe_dim, state.food_position)
+	draw_game_board(window.center, window.safe_dim)
+	draw_score(state.score_buf[:], window.padding)
+
+	rl.EndDrawing()
+	return types.State.Play
 }
 
 set_score_buf :: proc(buf: []byte, score: i64) {
