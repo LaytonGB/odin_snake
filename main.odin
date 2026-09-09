@@ -5,14 +5,14 @@ import "types"
 import rl "vendor:raylib"
 import "window"
 
-Program_State :: struct {
+State :: struct {
 	prev_state, curr_state: types.State,
 	last_state_change_time: f64,
-	game_state:             game.Game_State,
+	game_state:             game.State,
 }
 
 main :: proc() {
-	state := Program_State {
+	state := State {
 		prev_state             = types.State.Exit,
 		curr_state             = types.State.Play,
 		last_state_change_time = rl.GetTime(),
@@ -40,7 +40,7 @@ main :: proc() {
 	window.close_window()
 }
 
-set_state :: proc(state: ^Program_State, new_state: types.State) {
+set_state :: proc(state: ^State, new_state: types.State) {
 	state.prev_state = state.curr_state
 	state.curr_state = new_state
 	state.last_state_change_time = rl.GetTime()

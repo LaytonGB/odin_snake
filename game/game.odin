@@ -16,7 +16,7 @@ GRID_SIZE: i32 : 11
 
 window: Window
 
-Game_State :: struct {
+State :: struct {
 	score:               i64,
 	score_buf:           [128]byte,
 	last_move_dir:       Vec2,
@@ -27,11 +27,11 @@ Game_State :: struct {
 	snake_positions:     deque.Deque(GRID_SIZE * GRID_SIZE, Vec2),
 }
 
-init :: proc(window: Window) -> Game_State {
+init :: proc(window: Window) -> State {
 	snake_positions := deque.new(GRID_SIZE * GRID_SIZE, Vec2)
 	deque.push_front(&snake_positions, Vec2{GRID_SIZE / 2, GRID_SIZE / 2})
 
-	return Game_State {
+	return State {
 		score = 0,
 		score_buf = [128]byte{},
 		last_move_dir = Vec2{0, 1},
@@ -43,7 +43,7 @@ init :: proc(window: Window) -> Game_State {
 	}
 }
 
-play :: proc(window: Window, state: ^Game_State) -> types.State {
+play :: proc(window: Window, state: ^State) -> types.State {
 	// handle input and snake move
 	if new_move_dir, has_last_input := get_input_vector().?; has_last_input {
 		if is_input_valid(&state.snake_positions, new_move_dir) {
