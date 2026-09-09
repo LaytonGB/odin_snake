@@ -1,6 +1,9 @@
-package game
+package window
 
+import "../types"
 import rl "vendor:raylib"
+
+Vec2 :: types.Vec2
 
 Window :: struct {
 	size, center:      Vec2,

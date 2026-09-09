@@ -1,15 +1,17 @@
 package main
 
 import "game"
+import "types"
+import "window"
 
 main :: proc() {
-	state := game.State.PLAY
+	state := types.State.PLAY
 
-	window := game.init_window()
+	w := window.init_window()
 
 	for state == .PLAY {
-		game.play(&state, window)
+		game.play(&state, w)
 	}
 
-	game.close_window()
+	window.close_window()
 }

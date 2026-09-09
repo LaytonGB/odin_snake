@@ -1,23 +1,18 @@
 package game
 
 import "../deque"
+import "../types"
+import "../window"
 import "core:math/rand"
 import "core:strconv"
 import rl "vendor:raylib"
 
-State :: enum {
-	MENU,
-	PLAY,
-	LOSE,
-	WIN,
-	EXIT,
-}
-
-Vec2 :: [2]i32
+Vec2 :: types.Vec2
+Window :: window.Window
 
 GRID_SIZE: i32 : 11
 
-play :: proc(state: ^State, window: Window) {
+play :: proc(state: ^types.State, window: Window) {
 	score: i64 = 0
 
 	last_move_dir := Vec2{0, 1}
