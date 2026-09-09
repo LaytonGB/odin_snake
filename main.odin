@@ -5,25 +5,33 @@ import "types"
 import rl "vendor:raylib"
 import "window"
 
+Program_State :: struct {
+	prev_state, curr_state: types.State,
+	last_state_change_time: f64,
+	game_state:             game.Game_State,
+}
+
 main :: proc() {
-	prev_state := types.State.Exit
-	state := types.State.Play
-	game_state: game.Game_State
+	state := Program_State {
+		prev_state             = types.State.Exit,
+		curr_state             = types.State.Play,
+		last_state_change_time = rl.GetTime(),
+	}
 
 	w := window.init_window()
 
-	loop: for state != .Exit {
+	loop: for state.curr_state != .Exit {
 		if rl.IsKeyDown(.ESCAPE) {
 			break
 		}
 
-		#partial switch state {
+		#partial switch state.curr_state {
 		case .Play:
-			if prev_state != .Play {
-				game_state = game.init(w)
+			if state.prev_state != .Play {
+				state.game_state = game.init(w)
 			}
-			new_state := game.play(w, &game_state)
-			set_state(&prev_state, &state, new_state)
+			new_state := game.play(w, &state.game_state)
+			set_state(&state, new_state)
 		case:
 			break loop
 		}
@@ -32,7 +40,8 @@ main :: proc() {
 	window.close_window()
 }
 
-set_state :: proc(prev_state, state: ^types.State, new_state: types.State) {
-	prev_state^ = state^
-	state^ = new_state
+set_state :: proc(state: ^Program_State, new_state: types.State) {
+	state.prev_state = state.curr_state
+	state.curr_state = new_state
+	state.last_state_change_time = rl.GetTime()
 }
