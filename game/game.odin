@@ -14,6 +14,7 @@ GRID_SIZE: i32 : 11
 
 play :: proc(state: ^types.State, window: Window) {
 	score: i64 = 0
+	score_buf: [128]byte
 
 	last_move_dir := Vec2{0, 1}
 	last_step_time: f64 = rl.GetTime()
@@ -45,6 +46,7 @@ play :: proc(state: ^types.State, window: Window) {
 		if is_snake_head_in_pos(&snake_positions, food_position) {
 			grow_snake(&snake_positions)
 			score = i64(f64(score) * 1.2 + 1)
+			set_score_buf(score_buf[:], score)
 			sec_per_move *= move_delay_modifier
 			food_position = get_random_grid_pos()
 		}
@@ -55,16 +57,18 @@ play :: proc(state: ^types.State, window: Window) {
 		draw_snake(window.center, window.safe_dim, &snake_positions)
 		draw_food(window.center, window.safe_dim, food_position)
 		draw_game_board(window.center, window.safe_dim)
-		draw_score(score, window.padding)
+		draw_score(score_buf[:], window.padding)
 
 		rl.EndDrawing()
 	}
 }
 
-draw_score :: proc(score: i64, padding: i32) {
-	score_text_buf: [128]byte
-	strconv.write_int(score_text_buf[:], score, 10)
-	ptr: [^]byte = raw_data(score_text_buf[:])
+set_score_buf :: proc(buf: []byte, score: i64) {
+	strconv.write_int(buf, score, 10)
+}
+
+draw_score :: proc(buf: []byte, padding: i32) {
+	ptr: [^]byte = raw_data(buf[:])
 	cstr := cstring(ptr)
 	rl.DrawText(cstr, padding, padding, 24, {150, 150, 150, 255})
 }
