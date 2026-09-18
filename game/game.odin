@@ -53,7 +53,7 @@ play :: proc(window: Window, state: ^State) -> types.State {
 	if do_move_snake(state.last_step_time, state.sec_per_move) {
 		next_pos := get_next_pos(&state.snake_positions, state.last_move_dir)
 		if !is_in_bounds(next_pos) || is_pos_in_snake(&state.snake_positions, next_pos) {
-			return types.State.Lose
+			return .Lose
 		}
 		move_snake(&state.snake_positions, next_pos)
 		state.last_step_time = rl.GetTime()
@@ -74,20 +74,53 @@ play :: proc(window: Window, state: ^State) -> types.State {
 	draw_snake(window.center, window.safe_dim, &state.snake_positions)
 	draw_food(window.center, window.safe_dim, state.food_position)
 	draw_game_board(window.center, window.safe_dim)
-	draw_score(state.score_buf[:], window.padding)
+	draw_score(state.score_buf[:], {window.padding, window.padding}, 24)
+	rl.EndDrawing()
+
+	return .Play
+}
+
+SCORE_POSITION_TRANSITION_DURATION_ON_LOSS: f32 : 2.0
+
+lose :: proc(window: Window, state: ^State) -> types.State {
+	rl.BeginDrawing()
+
+	// draw board
+	rl.ClearBackground({100, 100, 100, 255})
+	draw_snake(window.center, window.safe_dim, &state.snake_positions)
+	draw_food(window.center, window.safe_dim, state.food_position)
+	draw_game_board(window.center, window.safe_dim)
+
+	// TODO transition score position
+	// draw score
+	rl.DrawRectangleRounded(
+		rl.Rectangle {
+			f32(window.center.x / 2),
+			f32(window.center.y * 2 / 3),
+			f32(window.center.x),
+			f32(window.center.y * 2 / 3),
+		},
+		24.0,
+		12,
+		{80, 80, 80, 200},
+	)
+	draw_score(state.score_buf[:], {window.center.x - 200, window.center.y - 40}, 100)
 
 	rl.EndDrawing()
-	return types.State.Play
+
+	// TODO show options
+
+	return .Lose
 }
 
 set_score_buf :: proc(buf: []byte, score: i64) {
 	strconv.write_int(buf, score, 10)
 }
 
-draw_score :: proc(buf: []byte, padding: i32) {
+draw_score :: proc(buf: []byte, position: [2]i32, size: i32) {
 	ptr: [^]byte = raw_data(buf[:])
 	cstr := cstring(ptr)
-	rl.DrawText(cstr, padding, padding, 24, {150, 150, 150, 255})
+	rl.DrawText(cstr, position.x, position.y, size, {150, 150, 150, 255})
 }
 
 is_input_valid :: proc(snake: ^deque.Deque($N, Vec2), move: Vec2) -> bool {

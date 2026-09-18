@@ -32,6 +32,9 @@ main :: proc() {
 			}
 			new_state := game.play(w, &state.game_state)
 			set_state(&state, new_state)
+		case .Lose:
+			new_state := game.lose(w, &state.game_state)
+			set_state(&state, new_state)
 		case:
 			break loop
 		}
