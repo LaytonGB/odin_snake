@@ -20,7 +20,7 @@ main :: proc() {
 
 	w := window.init_window()
 
-	loop: for state.curr_state != .Exit {
+	loop: for !rl.WindowShouldClose() && state.curr_state != .Exit {
 		if rl.IsKeyDown(.ESCAPE) {
 			break
 		}
