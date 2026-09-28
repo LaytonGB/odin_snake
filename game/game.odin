@@ -87,22 +87,26 @@ SCORE_FONT_SIZE: i32 : 100
 lose :: proc(window: Window, state: ^State) -> types.State {
 	rl.BeginDrawing()
 
-	// draw board
 	rl.ClearBackground({100, 100, 100, 255})
 	draw_snake(window.center, window.safe_dim, &state.snake_positions)
 	draw_food(window.center, window.safe_dim, state.food_position)
 	draw_game_board(window.center, window.safe_dim)
+	draw_score_with_background(state.score_buf[:], window.center, SCORE_FONT_SIZE)
+	rl.EndDrawing()
 
-	score_cstr := get_score_cstr(state.score_buf[:])
+	return .Lose
+}
+
+draw_score_with_background :: proc(buf: []byte, position: [2]i32, size: i32) {
+	score_cstr := get_score_cstr(buf)
 	text_width := rl.MeasureText(score_cstr, SCORE_FONT_SIZE)
 
-	// draw score
 	rl.DrawRectangleRounded(
 		rl.Rectangle {
-			f32(window.center.x / 2),
-			f32(window.center.y * 2 / 3),
-			f32(window.center.x),
-			f32(window.center.y * 2 / 3),
+			f32(position.x / 2),
+			f32(position.y * 2 / 3),
+			f32(position.x),
+			f32(position.y * 2 / 3),
 		},
 		24.0,
 		12,
@@ -110,13 +114,9 @@ lose :: proc(window: Window, state: ^State) -> types.State {
 	)
 	draw_score(
 		score_cstr,
-		{window.center.x - text_width / 2, window.center.y - SCORE_FONT_SIZE / 2},
+		{position.x - text_width / 2, position.y - SCORE_FONT_SIZE / 2},
 		SCORE_FONT_SIZE,
 	)
-
-	rl.EndDrawing()
-
-	return .Lose
 }
 
 set_score_buf :: proc(buf: []byte, score: i64) {
