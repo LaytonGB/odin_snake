@@ -74,13 +74,15 @@ play :: proc(window: Window, state: ^State) -> types.State {
 	draw_snake(window.center, window.safe_dim, &state.snake_positions)
 	draw_food(window.center, window.safe_dim, state.food_position)
 	draw_game_board(window.center, window.safe_dim)
-	draw_score(state.score_buf[:], {window.padding, window.padding}, 24)
+	score_cstr := get_score_cstr(state.score_buf[:])
+	draw_score(score_cstr, {window.padding, window.padding}, 24)
 	rl.EndDrawing()
 
 	return .Play
 }
 
 SCORE_POSITION_TRANSITION_DURATION_ON_LOSS: f32 : 2.0
+SCORE_FONT_SIZE: i32 : 100
 
 lose :: proc(window: Window, state: ^State) -> types.State {
 	rl.BeginDrawing()
@@ -91,7 +93,9 @@ lose :: proc(window: Window, state: ^State) -> types.State {
 	draw_food(window.center, window.safe_dim, state.food_position)
 	draw_game_board(window.center, window.safe_dim)
 
-	// TODO transition score position
+	score_cstr := get_score_cstr(state.score_buf[:])
+	text_width := rl.MeasureText(score_cstr, SCORE_FONT_SIZE)
+
 	// draw score
 	rl.DrawRectangleRounded(
 		rl.Rectangle {
@@ -104,11 +108,13 @@ lose :: proc(window: Window, state: ^State) -> types.State {
 		12,
 		{80, 80, 80, 200},
 	)
-	draw_score(state.score_buf[:], {window.center.x - 200, window.center.y - 40}, 100)
+	draw_score(
+		score_cstr,
+		{window.center.x - text_width / 2, window.center.y - SCORE_FONT_SIZE / 2},
+		SCORE_FONT_SIZE,
+	)
 
 	rl.EndDrawing()
-
-	// TODO show options
 
 	return .Lose
 }
@@ -117,9 +123,12 @@ set_score_buf :: proc(buf: []byte, score: i64) {
 	strconv.write_int(buf, score, 10)
 }
 
-draw_score :: proc(buf: []byte, position: [2]i32, size: i32) {
+get_score_cstr :: proc(buf: []byte) -> cstring {
 	ptr: [^]byte = raw_data(buf[:])
-	cstr := cstring(ptr)
+	return cstring(ptr)
+}
+
+draw_score :: proc(cstr: cstring, position: [2]i32, size: i32) {
 	rl.DrawText(cstr, position.x, position.y, size, {150, 150, 150, 255})
 }
 
